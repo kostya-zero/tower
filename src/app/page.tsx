@@ -13,8 +13,8 @@ export default function App() {
   const [state, setState] = useState<AppState>(AppState.Main);
   return (
     <>
-      {state === AppState.Main && <MainPage/>}
-      {state === AppState.Chat && <ChatPage/>}
+      {state === AppState.Main && <MainPage />}
+      {state === AppState.Chat && <ChatPage />}
     </>
   );
 }

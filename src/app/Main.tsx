@@ -1,5 +1,6 @@
 "use client";
 
+import { invoke } from "@tauri-apps/api/core";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,11 @@ const connectSchema = z.object({
 });
 
 type ConnectFormValues = z.infer<typeof connectSchema>;
+
+interface ConnectionResult {
+  success: boolean;
+  message: string;
+}
 
 export default function MainPage() {
   const [connecting, setConnecting] = useState(false);
@@ -34,8 +40,13 @@ export default function MainPage() {
   async function connect(values: ConnectFormValues) {
     setConnecting(true);
     console.log("Form values:", values);
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-    setConnecting(false);
+    // await new Promise((resolve) => setTimeout(resolve, 3000));
+    invoke("setup_connection", { address: values.serverAddress })
+      .then((result) => {
+        console.log("Connection result:", result);
+      })
+      .catch((error) => console.error("Connection error:", error))
+      .finally(() => setConnecting(false));
   }
 
   return (
