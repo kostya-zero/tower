@@ -88,25 +88,16 @@ impl Server {
             .parse::<usize>()
             .map_err(|_| anyhow::anyhow!("Failed to parse message count from response"))?;
 
-        println!("Current messages count: {}", count);
-
         if count > self.messages_count {
-            println!("Retrieving messages from server");
             conn.write_all(format!("\x02{}", self.messages_count).as_bytes()).await?;
-            println!("Requesting messages from server, count: {}", self.messages_count);
             let mut buffer = vec![0u8; count - self.messages_count];
-            println!("Buffer size: {}", buffer.len());
             conn.read_exact(&mut buffer).await?;
-            println!("Received {} bytes from server", buffer.len());
             let response = String::from_utf8_lossy(&buffer).into_owned();
-            println!("Raw response received: {}", response);
 
             let mut vec_messages = response.split('\n').collect::<Vec<&str>>();
             // Removing last one because it is always empty
             vec_messages.remove(vec_messages.len() - 1);
-            println!("Raw messages received: {:?}", vec_messages);
             let messages: Vec<MessageResponse> = format_messages(vec_messages);
-            println!("Received messages: {:?}", messages);
 
             self.messages_count = count;
 

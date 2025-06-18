@@ -74,8 +74,8 @@ export default function MainPage({ setAppState }: Props) {
           <p className="font-funnel font-bold text-6xl">Tower</p>
         </div>
         <p className="font-inter text-sm text-neutral-300">
-          Fill server IP-address and your username to connect to a server. Only
-          RACv2 servers are compatible.
+          Fill server IP-address with port and your username to connect to a
+          server. Only RACv2 servers are compatible.
         </p>
         <form
           className="flex flex-col gap-2"
@@ -85,7 +85,7 @@ export default function MainPage({ setAppState }: Props) {
           <div className="space-y-1">
             <Input
               disabled={connecting}
-              placeholder="Server Address"
+              placeholder="Server Address and Port"
               {...register("serverAddress")}
             />
             {errors.serverAddress && (
@@ -116,6 +116,9 @@ export default function MainPage({ setAppState }: Props) {
             )}
           </Button>
         </form>
+        <small className={"text-neutral-500"}>
+          Version 1.0.0-rc1 • Made by Konstantin Zhigaylo
+        </small>
       </div>
       <Dialog open={connecting}>
         <DialogHeader>

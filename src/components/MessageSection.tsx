@@ -10,7 +10,10 @@ export default function MessageSection({ message }: Props) {
       <div className="flex flex-row justify-between items-center">
         <div className="flex flex-row font-bold gap-2 items-center">
           {message.username}
-          <span className="text-neutral-500"> via {message.client}</span>
+          <span className="text-neutral-500 font-normal">
+            {" "}
+            via {message.client}
+          </span>
         </div>
         <p className="text-neutral-500">
           {message.timestamp ? message.timestamp : "In this timeline"}

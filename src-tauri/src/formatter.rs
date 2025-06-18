@@ -57,6 +57,7 @@ pub fn format_messages(messages: Vec<&str>) -> Vec<MessageResponse> {
                         let text = cap.get(2).map_or("", |m| m.as_str());
                         new_message.content = text.to_string();
                         new_message.username = username.to_string();
+                        new_message.client = client.to_string();
                     })
                 });
             } else {
@@ -64,19 +65,6 @@ pub fn format_messages(messages: Vec<&str>) -> Vec<MessageResponse> {
                 continue;
             }
         }
-
-        CLIENTS.iter().find_map(|(reg, client)| {
-            if reg.is_match(&sanitized) {
-                if let Some(client_name) = reg.captures(&sanitized) {
-                    if let Some(name) = client_name.get(1) {
-                        new_message.username = name.as_str().to_string();
-                    }
-                    new_message.client = client.to_string();
-                }
-                return Some(());
-            }
-            None
-        });
 
         new_message_response.message = Some(new_message);
         formatted_messages.push(new_message_response);
