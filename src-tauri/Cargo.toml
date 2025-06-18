@@ -1,10 +1,11 @@
 [package]
-name = "app"
-version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
+name = "tower"
+version = "1.0.0-rc1"
+description = "A modern desktop client for RAC v2 built with Tauri."
+authors = ["Konstantin Zhigaylo <zero@kostyazero.com>"]
+license = "MIT"
+repository = "https://github.com/kostya-zero/tower"
+homepage = "https://github.com/kostya-zero/tower"
 edition = "2021"
 rust-version = "1.77.2"
 

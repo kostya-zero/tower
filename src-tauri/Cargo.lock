@@ -91,22 +91,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e16d2d3311acee920a9eb8d33b8cbc1787ce4a264e85f964c2404b969bdcd487"
 
 [[package]]
-name = "app"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "lazy_static",
- "log",
- "regex",
- "serde",
- "tauri",
- "tauri-build",
- "tauri-plugin-log",
- "thiserror 2.0.12",
- "tokio",
-]
-
-[[package]]
 name = "arrayvec"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2785,7 +2769,7 @@ dependencies = [
  "sync_wrapper",
  "tokio",
  "tokio-util",
- "tower",
+ "tower 0.5.2",
  "tower-service",
  "url",
  "wasm-bindgen",
@@ -3864,6 +3848,22 @@ dependencies = [
  "tokio",
  "tower-layer",
  "tower-service",
+]
+
+[[package]]
+name = "tower"
+version = "1.0.0-rc1"
+dependencies = [
+ "anyhow",
+ "lazy_static",
+ "log",
+ "regex",
+ "serde",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-log",
+ "thiserror 2.0.12",
+ "tokio",
 ]
 
 [[package]]
