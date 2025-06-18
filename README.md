@@ -7,7 +7,7 @@
 
 ![Screenshot of the login page in Tower](/.github/assets/login.png)
 <div align="center">
-<small align="center">A screenshot of the login page in Tower.</small>
+<sub align="center">A screenshot of the login page in Tower.</sub>
 </div>
 
 <br>
