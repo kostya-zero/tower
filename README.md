@@ -10,6 +10,8 @@
 <small align="center">A screenshot of the login page in Tower.</small>
 </div>
 
+<br>
+
 Welcome to repository of Tower, a modern desktop client for the RAC v2 protocol built with Tauri.
 Tower is designed to provide a seamless and user-friendly experience for interacting with RAC servers.
 
