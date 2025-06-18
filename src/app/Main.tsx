@@ -1,28 +1,38 @@
 "use client";
 
 import { invoke } from "@tauri-apps/api/core";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { LoaderCircleIcon, RadioTowerIcon } from "lucide-react";
-import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AppState } from "@/app/page";
 
 const connectSchema = z.object({
   serverAddress: z.string().nonempty("Server address is required"),
   username: z.string().nonempty("Username is required"),
 });
 
-type ConnectFormValues = z.infer<typeof connectSchema>;
-
-interface ConnectionResult {
+type ConnectionResult = {
   success: boolean;
   message: string;
-}
+};
 
-export default function MainPage() {
+type ConnectFormValues = z.infer<typeof connectSchema>;
+
+type Props = {
+  setAppState: React.Dispatch<React.SetStateAction<AppState>>;
+};
+
+export default function MainPage({ setAppState }: Props) {
   const [connecting, setConnecting] = useState(false);
 
   const {
@@ -40,10 +50,17 @@ export default function MainPage() {
   async function connect(values: ConnectFormValues) {
     setConnecting(true);
     console.log("Form values:", values);
-    // await new Promise((resolve) => setTimeout(resolve, 3000));
-    invoke("setup_connection", { address: values.serverAddress })
+    invoke<ConnectionResult>("setup_connection", {
+      address: values.serverAddress,
+      userName: values.username,
+    })
       .then((result) => {
-        console.log("Connection result:", result);
+        if (result.success) {
+          setAppState(AppState.Chat);
+        } else {
+          console.error("Connection failed:", result.message);
+          alert(`Connection failed: ${result.message}`);
+        }
       })
       .catch((error) => console.error("Connection error:", error))
       .finally(() => setConnecting(false));
@@ -101,6 +118,9 @@ export default function MainPage() {
         </form>
       </div>
       <Dialog open={connecting}>
+        <DialogHeader>
+          <DialogTitle></DialogTitle>
+        </DialogHeader>
         <DialogContent
           onInteractOutside={(e) => e.preventDefault()}
           className="flex flex-row gap-5 p-5 w-[200px] mx-auto items-center"

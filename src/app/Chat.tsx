@@ -4,89 +4,89 @@ import BadMessageSection from "@/components/BadMessageSection";
 import MessageSection from "@/components/MessageSection";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Message } from "@/lib/types/message.types";
 import {
   DoorOpenIcon,
   LoaderCircleIcon,
   SendHorizonalIcon,
 } from "lucide-react";
-import { useState } from "react";
-import toast from "react-hot-toast";
+import { useEffect, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { AppState } from "@/app/page";
+import { invoke } from "@tauri-apps/api/core";
+import { MessageResponse } from "@/lib/types/message.types";
 
-export default function ChatPage() {
+type Props = {
+  setAppState: React.Dispatch<React.SetStateAction<AppState>>;
+};
+
+type SendResult = {
+  success: boolean;
+  message: string;
+};
+
+export default function ChatPage({ setAppState }: Props) {
   const [sending, setSending] = useState(false);
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<MessageResponse[]>([]);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const fetchMessages = () => {
+      console.log("fetching messages");
+      invoke<MessageResponse[]>("fetch_messages")
+        .then((r) => {
+          console.log(r);
+          setMessages((messages) => [...messages, ...r]);
+        })
+        .catch((e) => {
+          console.error("Error fetching messages:", e);
+        });
+    };
+
+    intervalRef.current = setInterval(fetchMessages, 5000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
+
+  async function stopFetchingMessages() {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  }
+
+  const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMessage(e.target.value);
+  };
 
   async function sendMessage() {
     setSending(true);
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-    toast.error("Message failed to send");
-    setSending(false);
+    const send_message = message.trim();
+    if (send_message === "") return;
+
+    await invoke<SendResult>("send_message", { message: send_message })
+      .then((r) => {
+        if (r.success) {
+          setMessage("");
+        } else {
+          console.error("Failed to send message:", r.message);
+        }
+      })
+      .catch((e) => {
+        console.error("Error sending message:", e);
+      })
+      .finally(() => setSending(false));
   }
 
-  const messages: Message[] = [
-    {
-      username: "Zero",
-      client: "Tower",
-      message:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-      timeStamp: new Date(),
-    },
-    {
-      username: "Zero",
-      client: "Tower",
-      message:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-    },
-    {
-      username: "Zero",
-      client: "Tower",
-      message:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-    },
-    {
-      username: "Zero",
-      client: "Tower",
-      message:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-    },
-    {
-      username: "Zero",
-      client: "Tower",
-      message:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-    },
-    {
-      username: "Zero",
-      client: "Tower",
-      message:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-    },
-    {
-      username: "Zero",
-      client: "Tower",
-      message:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-    },
-    {
-      username: "Zero",
-      client: "Tower",
-      message:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-    },
-    {
-      username: "Zero",
-      client: "Tower",
-      message:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-    },
-    {
-      username: "Zero",
-      client: "Tower",
-      message:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-    },
-  ];
+  async function performDisconnect() {
+    await stopFetchingMessages();
+    await invoke("disconnect");
+    setAppState(AppState.Main);
+  }
 
   return (
     <main className="flex flex-col grow-0 justify-between shrink-0 h-screen">
@@ -94,16 +94,29 @@ export default function ChatPage() {
         className="flex-grow w-full overflow-y-auto"
         scrollHideDelay={400}
       >
-        {messages.map((message, index) => (
-          <MessageSection message={message} key={index} />
-        ))}
-        <BadMessageSection rawString="This is a bad message" />
+        {messages.map((message, index) =>
+          message.message ? (
+            <MessageSection message={message.message} key={index} />
+          ) : (
+            <BadMessageSection rawString={message.raw_string} key={index} />
+          ),
+        )}
       </ScrollArea>
       <div className="flex flex-row gap-2 p-2 border-t border-neutral-800">
-        <Button size="icon" variant={"outline"} className="cursor-pointer">
+        <Button
+          size="icon"
+          variant={"outline"}
+          className="cursor-pointer"
+          onClick={() => performDisconnect()}
+        >
           <DoorOpenIcon />
         </Button>
-        <Input placeholder="Your message here..." disabled={sending} />
+        <Input
+          placeholder="Your message here..."
+          disabled={sending}
+          value={message}
+          onChange={handleMessageChange}
+        />
         <Button
           size="icon"
           className="cursor-pointer"

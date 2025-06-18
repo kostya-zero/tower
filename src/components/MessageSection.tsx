@@ -1,5 +1,4 @@
 import { type Message } from "@/lib/types/message.types";
-import { format } from "date-fns";
 
 type Props = {
   message: Message;
@@ -14,12 +13,10 @@ export default function MessageSection({ message }: Props) {
           <span className="text-neutral-500"> via {message.client}</span>
         </div>
         <p className="text-neutral-500">
-          {message.timeStamp
-            ? format(new Date(message.timeStamp), "MMM d, yyyy h:mm a")
-            : "In this timeline"}
+          {message.timestamp ? message.timestamp : "In this timeline"}
         </p>
       </div>
-      <p className="text-neutral-300">{message.message}</p>
+      <p className="text-neutral-300">{message.content.trim()}</p>
     </figure>
   );
 }

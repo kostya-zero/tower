@@ -20,7 +20,7 @@ const jetbrains = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Tower",
-  description: "A new description for the Tower project",
+  description: "A RACv2 desktop client.",
 };
 
 export default function RootLayout({
