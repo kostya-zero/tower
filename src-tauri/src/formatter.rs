@@ -44,7 +44,7 @@ pub fn format_messages(messages: Vec<&str>) -> Vec<MessageResponse> {
         let cleaned = BRACES_REGEX.replace_all(message.trim(), "");
         let sanitized = sanitize(&cleaned);
 
-        let date_regex = DATE_REGEX.captures(message);
+        let date_regex = DATE_REGEX.captures(sanitized.as_str());
         if let Some(some_date) = date_regex {
             if let Some(date) = some_date.get(1) {
                 new_message.timestamp = Some(date.as_str().to_string());

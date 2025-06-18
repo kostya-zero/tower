@@ -9,7 +9,7 @@ import {
   LoaderCircleIcon,
   SendHorizonalIcon,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AppState } from "@/app/page";
 import { invoke } from "@tauri-apps/api/core";
@@ -126,19 +126,15 @@ export default function ChatPage({ setAppState }: Props) {
     setIsAtBottom(true);
 
     await stopFetchingMessages();
-    await invoke<SendResult>("send_message", { message: send_message })
-      .then((r) => {
-        if (r.success) {
-          setMessage("");
-          fetchMessages();
-          setTimeout(() => {
-            if (inputRef.current) {
-              inputRef.current.focus();
-            }
-          }, 10);
-        } else {
-          console.error("Failed to send message:", r.message);
-        }
+    await invoke("send_message", { message: send_message })
+      .then(() => {
+        setMessage("");
+        fetchMessages();
+        setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.focus();
+          }
+        }, 10);
       })
       .catch((e) => {
         console.error("Error sending message:", e);

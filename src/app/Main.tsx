@@ -21,11 +21,6 @@ const connectSchema = z.object({
   username: z.string().nonempty("Username is required"),
 });
 
-type ConnectionResult = {
-  success: boolean;
-  message: string;
-};
-
 type ConnectFormValues = z.infer<typeof connectSchema>;
 
 type Props = {
@@ -50,17 +45,12 @@ export default function MainPage({ setAppState }: Props) {
   async function connect(values: ConnectFormValues) {
     setConnecting(true);
     console.log("Form values:", values);
-    invoke<ConnectionResult>("setup_connection", {
+    invoke("setup_connection", {
       address: values.serverAddress,
       userName: values.username,
     })
-      .then((result) => {
-        if (result.success) {
-          setAppState(AppState.Chat);
-        } else {
-          console.error("Connection failed:", result.message);
-          alert(`Connection failed: ${result.message}`);
-        }
+      .then(() => {
+        setAppState(AppState.Chat);
       })
       .catch((error) => console.error("Connection error:", error))
       .finally(() => setConnecting(false));
