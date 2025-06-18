@@ -80,7 +80,7 @@ export default function ChatPage({ setAppState }: Props) {
   useEffect(() => {
     intervalRef.current = setInterval(fetchMessages, delay);
 
-    inputRef.current.focus();
+    inputRef.current!.focus();
 
     return () => {
       if (intervalRef.current) {
