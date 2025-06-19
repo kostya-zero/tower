@@ -20,11 +20,12 @@ tauri-build = { version = "2.2.0", features = [] }
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
+rac = { git = "https://github.com/kostya-zero/rac-rs.git", package = "rac_rs", features = ["async_client"] }
 log = "0.4"
 tauri = { version = "2.5.0", features = [] }
 tauri-plugin-log = "2.0.0-rc"
 regex = "1.11.1"
 lazy_static = "1.5.0"
-tokio = { version = "1.44.2", features = ["full"] }
+tokio = { version = "1.45.1", features = ["full"] }
 anyhow = "1.0.98"
 thiserror = "2.0.12"

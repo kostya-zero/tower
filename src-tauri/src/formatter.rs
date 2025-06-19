@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use crate::message::MessageResponse;
 use crate::{clients::Clients, message::Message};
 use lazy_static::lazy_static;
@@ -27,7 +28,7 @@ lazy_static! {
     pub static ref CONTROL_CHARS_REGEX: Regex = Regex::new(r"[\x00-\x1F\x7F]").unwrap();
 }
 
-pub fn format_messages(messages: Vec<&str>) -> Vec<MessageResponse> {
+pub fn format_messages(messages: Vec<Cow<str>>) -> Vec<MessageResponse> {
     let mut formatted_messages: Vec<MessageResponse> = Vec::new();
     for message in messages.iter() {
         let mut new_message = Message {

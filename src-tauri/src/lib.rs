@@ -1,12 +1,14 @@
+use crate::formatter::format_messages;
 use crate::message::MessageResponse;
-use client::Client;
+use rac::async_client::Client;
+use rac::shared::{Connection, Credentials};
 use tauri::{Manager, State};
 use tokio::sync::Mutex;
 
-mod client;
 mod clients;
 mod formatter;
 mod message;
+
 #[tauri::command]
 async fn setup_connection(
     state: State<'_, Mutex<Client>>,
@@ -14,40 +16,56 @@ async fn setup_connection(
     user_name: String,
 ) -> Result<(), String> {
     let mut client = state.lock().await;
-
-    if let Err(e) = client.setup_connection(&address, &user_name).await {
-        return Err(format!("Failed to set up connection: {}", e));
-    }
-
+    client.update_address(address);
+    client.update_credentials(Credentials {
+        username: user_name.clone(),
+        password: None,
+    });
+    client.test_connection().await.map_err(|e| e.to_string())?;
+    client
+        .fetch_messages_size()
+        .await
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
 
 #[tauri::command]
 async fn disconnect(state: State<'_, Mutex<Client>>) -> Result<(), String> {
     let mut client = state.lock().await;
-    client.disconnect().await;
+    client.reset();
     Ok(())
 }
 
 #[tauri::command]
 async fn fetch_messages(state: State<'_, Mutex<Client>>) -> Result<Vec<MessageResponse>, String> {
     let mut client = state.lock().await;
-    let messages = client.get_messages().await.map_err(|e| e.to_string())?;
-    Ok(messages)
+    let messages = client
+        .fetch_new_messages()
+        .await
+        .map_err(|e| e.to_string())?
+        .to_vec();
+    let formatted_messages = format_messages(messages);
+    Ok(formatted_messages)
 }
+
 #[tauri::command]
 async fn send_message(state: State<'_, Mutex<Client>>, message: String) -> Result<(), String> {
     let client = state.lock().await;
-    if let Err(e) = client.send_message(&message).await {
-        return Err(format!("Failed to send message: {}", e));
-    }
+    client
+        .send_custom_message(format!("\u{25B2}<{}> {}", client.username(), message).as_str())
+        .await
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
 
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
-            app.manage(Mutex::new(Client::new()));
+            app.manage(Mutex::new(Client::new(
+                "".to_string(),
+                Credentials::default(),
+                Connection::RAC,
+            )));
             if cfg!(debug_assertions) {
                 app.handle().plugin(
                     tauri_plugin_log::Builder::default()

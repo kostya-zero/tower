@@ -3,6 +3,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -17,10 +18,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/Toasts";
 import { AppState } from "@/lib/enums/appstate";
 import { version } from "@/lib/constants/version";
+import { Switch } from "@/components/ui/switch";
 
 const connectSchema = z.object({
   serverAddress: z.string().nonempty("Server address is required"),
   username: z.string().nonempty("Username is required"),
+  password: z.string().optional(),
 });
 
 type ConnectFormValues = z.infer<typeof connectSchema>;
@@ -31,6 +34,12 @@ type Props = {
 
 export default function MainPage({ setAppState }: Props) {
   const [connecting, setConnecting] = useState(false);
+  const [useAuth, setUseAuth] = useState(false);
+
+  const handleAuthChange = (value: boolean) => {
+    setUseAuth(value);
+    console.log(value);
+  };
 
   const {
     register,
@@ -41,6 +50,7 @@ export default function MainPage({ setAppState }: Props) {
     defaultValues: {
       serverAddress: "",
       username: "",
+      password: "",
     },
   });
 
@@ -104,6 +114,31 @@ export default function MainPage({ setAppState }: Props) {
             {errors.username && (
               <p className="text-xs text-red-500">{errors.username.message}</p>
             )}
+          </div>
+          {useAuth && (
+            <div className="space-y-1">
+              <Input
+                disabled={connecting}
+                type={"password"}
+                placeholder="Password"
+                {...register("password")}
+              />
+              {errors.password && (
+                <p className="text-xs text-red-500">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+          )}
+          <div className={"flex items-center space-x-2"}>
+            <Switch
+              id={"authenticate"}
+              checked={useAuth}
+              onCheckedChange={handleAuthChange}
+            />
+            <Label htmlFor={"authenticate"} className="text-sm">
+              Use authentication
+            </Label>
           </div>
           <Button
             type="submit"
