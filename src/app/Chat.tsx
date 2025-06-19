@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AppState } from "@/app/page";
 import { invoke } from "@tauri-apps/api/core";
 import { MessageResponse } from "@/lib/types/message.types";
 import {
@@ -23,14 +22,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { AppState } from "@/lib/enums/appstate";
 
 type Props = {
   setAppState: React.Dispatch<React.SetStateAction<AppState>>;
-};
-
-type SendResult = {
-  success: boolean;
-  message: string;
 };
 
 export default function ChatPage({ setAppState }: Props) {
@@ -166,10 +161,10 @@ export default function ChatPage({ setAppState }: Props) {
 
   return (
     <>
-      <main className="flex flex-col grow-0 justify-between shrink-0 h-screen">
+      <main className="flex h-screen shrink-0 grow-0 flex-col justify-between">
         <ScrollArea
           ref={scrollAreaRef}
-          className="flex-grow w-full overflow-y-auto"
+          className="w-full flex-grow overflow-y-auto"
           scrollHideDelay={400}
           onScrollCapture={checkIfAtBottom}
         >
@@ -181,7 +176,7 @@ export default function ChatPage({ setAppState }: Props) {
             ),
           )}
         </ScrollArea>
-        <div className="flex flex-row gap-2 p-2 border-t border-neutral-800">
+        <div className="flex flex-row gap-2 border-t border-neutral-800 p-2">
           <Button
             size="icon"
             variant={"outline"}

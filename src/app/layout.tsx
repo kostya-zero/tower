@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Funnel_Display, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "react-hot-toast";
+import { Toaster } from "@/components/Toasts";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -34,16 +34,7 @@ export default function RootLayout({
         className={`antialiased ${inter.variable} ${funnel_display.variable} ${jetbrains.variable} dark font-inter`}
       >
         {children}
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: "#0c0a09",
-              color: "#fff",
-            },
-          }}
-        />
+        <Toaster />
       </body>
     </html>
   );

@@ -14,7 +14,9 @@ import { LoaderCircleIcon, RadioTowerIcon } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AppState } from "@/app/page";
+import { toast } from "@/components/Toasts";
+import { AppState } from "@/lib/enums/appstate";
+import { version } from "@/lib/constants/version";
 
 const connectSchema = z.object({
   serverAddress: z.string().nonempty("Server address is required"),
@@ -52,20 +54,29 @@ export default function MainPage({ setAppState }: Props) {
       .then(() => {
         setAppState(AppState.Chat);
       })
-      .catch((error) => console.error("Connection error:", error))
+      .catch((error) =>
+        toast({
+          title: "Connection Error",
+          description: error.toString(),
+          button: {
+            label: "Retry",
+            onClick: () => connect(values),
+          },
+        }),
+      )
       .finally(() => setConnecting(false));
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-between ">
-      <div className="m-auto flex flex-col gap-4 max-w-[450px] w-full">
-        <div className="flex flex-row gap-4 items-center">
-          <RadioTowerIcon className="w-12 h-12 mr-3" />
-          <p className="font-funnel font-bold text-6xl">Tower</p>
+    <main className="flex min-h-screen items-center justify-between">
+      <div className="m-auto flex w-full max-w-[450px] flex-col gap-4">
+        <div className="flex flex-row items-center gap-4">
+          <RadioTowerIcon className="mr-3 h-12 w-12" />
+          <p className="font-funnel text-6xl font-bold">Tower</p>
         </div>
         <p className="font-inter text-sm text-neutral-300">
           Fill server IP-address with port and your username to connect to a
-          server. Only RACv2 servers are compatible.
+          server. Only RAC v2.x and v1.99.x servers are compatible.
         </p>
         <form
           className="flex flex-col gap-2"
@@ -107,7 +118,7 @@ export default function MainPage({ setAppState }: Props) {
           </Button>
         </form>
         <small className={"text-neutral-500"}>
-          Version 1.0.0-rc1 • Made by Konstantin Zhigaylo
+          Version {version} • Made by Konstantin Zhigaylo
         </small>
       </div>
       <Dialog open={connecting}>
@@ -116,7 +127,7 @@ export default function MainPage({ setAppState }: Props) {
         </DialogHeader>
         <DialogContent
           onInteractOutside={(e) => e.preventDefault()}
-          className="flex flex-row gap-5 p-5 w-[200px] mx-auto items-center"
+          className="mx-auto flex w-[200px] flex-row items-center gap-5 p-5"
         >
           <LoaderCircleIcon className="animate-spin" />
           <p>Connecting...</p>

@@ -3,11 +3,7 @@
 import { useState } from "react";
 import MainPage from "./Main";
 import ChatPage from "./Chat";
-
-export enum AppState {
-  Main,
-  Chat,
-}
+import { AppState } from "@/lib/enums/appstate";
 
 export default function App() {
   const [state, setState] = useState<AppState>(AppState.Main);
