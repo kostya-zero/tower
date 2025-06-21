@@ -35,9 +35,15 @@ type Props = {
 export default function MainPage({ setAppState }: Props) {
   const [connecting, setConnecting] = useState(false);
   const [useAuth, setUseAuth] = useState(false);
+  const [useTls, setUseTls] = useState(false);
 
   const handleAuthChange = (value: boolean) => {
     setUseAuth(value);
+    console.log(value);
+  };
+
+  const handleTlsChange = (value: boolean) => {
+    setUseTls(value);
     console.log(value);
   };
 
@@ -57,14 +63,30 @@ export default function MainPage({ setAppState }: Props) {
   async function connect(values: ConnectFormValues) {
     setConnecting(true);
     console.log("Form values:", values);
+    if (
+      !values.serverAddress.startsWith("rac://") &&
+      !values.serverAddress.startsWith("wrac://")
+    ) {
+      toast({
+        title: "Invalid Connection String",
+        description:
+          "As a connection string you should provide an address with port and the protocol. Example: rac://127.0.0.1:42666",
+      });
+      setConnecting(false);
+      return;
+    }
+
     invoke("setup_connection", {
       address: values.serverAddress,
       userName: values.username,
+      password: values.password,
+      useTls: useTls,
     })
       .then(() => {
         setAppState(AppState.Chat);
       })
-      .catch((error) =>
+      .catch((error) => {
+        console.log(error);
         toast({
           title: "Connection Error",
           description: error.toString(),
@@ -72,8 +94,8 @@ export default function MainPage({ setAppState }: Props) {
             label: "Retry",
             onClick: () => connect(values),
           },
-        }),
-      )
+        });
+      })
       .finally(() => setConnecting(false));
   }
 
@@ -86,7 +108,7 @@ export default function MainPage({ setAppState }: Props) {
         </div>
         <p className="font-inter text-sm text-neutral-300">
           Fill server IP-address with port and your username to connect to a
-          server. Only RAC v2.x and v1.99.x servers are compatible.
+          server. Both RAC and WRAC are supported.
         </p>
         <form
           className="flex flex-col gap-2"
@@ -138,6 +160,16 @@ export default function MainPage({ setAppState }: Props) {
             />
             <Label htmlFor={"authenticate"} className="text-sm">
               Use authentication
+            </Label>
+          </div>
+          <div className={"flex items-center space-x-2"}>
+            <Switch
+              id={"tls"}
+              checked={useTls}
+              onCheckedChange={handleTlsChange}
+            />
+            <Label htmlFor={"tls"} className="text-sm">
+              Use TLS encryption
             </Label>
           </div>
           <Button
