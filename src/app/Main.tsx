@@ -107,8 +107,8 @@ export default function MainPage({ setAppState }: Props) {
           <p className="font-funnel text-6xl font-bold">Tower</p>
         </div>
         <p className="font-inter text-sm text-neutral-300">
-          Fill server IP-address with port and your username to connect to a
-          server. Both RAC and WRAC are supported.
+          This is a client for RAC and WRAC protocol. Fill the credentials below
+          to connect to a server.
         </p>
         <form
           className="flex flex-col gap-2"
@@ -118,7 +118,7 @@ export default function MainPage({ setAppState }: Props) {
           <div className="space-y-1">
             <Input
               disabled={connecting}
-              placeholder="Server Address and Port"
+              placeholder="Connection String"
               {...register("serverAddress")}
             />
             {errors.serverAddress && (

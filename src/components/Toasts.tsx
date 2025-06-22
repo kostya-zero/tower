@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
 const Toaster = () => {
-  return <Sonner />;
+  return <Sonner position={"top-right"} />;
 };
 
 interface BottomButton {
@@ -26,7 +26,7 @@ interface ToastProps {
 const Toast = (props: ToastProps) => {
   const { title, description, button, id } = props;
   return (
-    <div className="group bg-900 flex w-full items-end gap-4 rounded-lg border border-neutral-800 p-4 md:w-[364px] md:max-w-[364px]">
+    <div className="group flex w-full items-end gap-4 rounded-lg border border-neutral-800 bg-neutral-900 p-4 md:w-[364px] md:max-w-[364px]">
       <div className="flex flex-1 items-center">
         <div className="w-full text-sm">
           <div className={"flex flex-row items-center justify-between"}>
