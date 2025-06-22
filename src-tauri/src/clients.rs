@@ -7,6 +7,7 @@ pub enum Clients {
     Mefedroniy,
     CRAB,
     clRAC,
+    Snowdrop,
 }
 
 impl Display for Clients {
@@ -17,6 +18,7 @@ impl Display for Clients {
             Clients::Mefedroniy => write!(f, "Mefedroniy"),
             Clients::CRAB => write!(f, "CRAB"),
             Clients::clRAC => write!(f, "clRAC"),
+            Clients::Snowdrop => write!(f, "Snowdrop")
         }
     }
 }

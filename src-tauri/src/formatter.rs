@@ -1,8 +1,8 @@
-use std::borrow::Cow;
 use crate::message::MessageResponse;
 use crate::{clients::Clients, message::Message};
 use lazy_static::lazy_static;
 use regex::Regex;
+use std::borrow::Cow;
 
 lazy_static! {
     pub static ref DATE_REGEX: Regex = Regex::new(r"\[(.*?)\] (.*)").unwrap();
@@ -19,6 +19,10 @@ lazy_static! {
         (
             Regex::new(r"\u{00B0}\u{0298}<(.*?)> (.*)").unwrap(),
             Clients::Mefedroniy
+        ),
+        (
+            Regex::new(r"\u{0D9E}<(.*?)> (.*)").unwrap(),
+            Clients::Snowdrop
         ),
         (Regex::new(r"<(.*?)> (.*)").unwrap(), Clients::clRAC),
     ];
@@ -53,7 +57,7 @@ pub fn format_messages(messages: Vec<Cow<str>>) -> Vec<MessageResponse> {
 
             if let Some(content) = some_date.get(2) {
                 CLIENTS.iter().find_map(|(reg, client)| {
-                    reg.captures(content.as_str()).map(|cap|{
+                    reg.captures(content.as_str()).map(|cap| {
                         let username = cap.get(1).map_or("", |m| m.as_str());
                         let text = cap.get(2).map_or("", |m| m.as_str());
                         new_message.content = text.to_string();

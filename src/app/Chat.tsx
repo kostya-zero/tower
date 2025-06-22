@@ -23,6 +23,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { AppState } from "@/lib/enums/appstate";
+import { toast } from "@/components/Toasts";
 
 type Props = {
   setAppState: React.Dispatch<React.SetStateAction<AppState>>;
@@ -68,7 +69,10 @@ export default function ChatPage({ setAppState }: Props) {
         setMessages((messages) => [...messages, ...r]);
       })
       .catch((e) => {
-        console.error("Error fetching messages:", e);
+        toast({
+          title: "Failed to fetch messages",
+          description: e.toString(),
+        });
       });
   };
 
@@ -132,7 +136,10 @@ export default function ChatPage({ setAppState }: Props) {
         }, 10);
       })
       .catch((e) => {
-        console.error("Error sending message:", e);
+        toast({
+          title: "Failed to send message",
+          description: e.toString(),
+        });
       })
       .finally(() => {
         setSending(false);
