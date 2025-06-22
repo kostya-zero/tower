@@ -2,7 +2,7 @@ use crate::formatter::format_messages;
 use crate::message::MessageResponse;
 use rac::async_client::Client;
 use rac::async_wrac::WClient;
-use rac::shared::Credentials;
+use rac::shared::{ClientError, Credentials};
 use tauri::{Manager, State};
 use tokio::sync::Mutex;
 
@@ -47,10 +47,13 @@ async fn setup_connection(
             .await
             .map_err(|e| e.to_string())?;
         if !password.is_empty() {
-            rac_client
-                .register_user()
-                .await
-                .map_err(|e| e.to_string())?;
+            let response = rac_client.register_user().await;
+            if let Err(e) = response {
+                match e {
+                    ClientError::UsernameAlreadyTaken => {}
+                    _ => return Err(e.to_string()),
+                }
+            }
         }
         *client = ProtocolClient::Rac(rac_client);
     } else if address.starts_with("wrac://") {
@@ -73,10 +76,13 @@ async fn setup_connection(
             .await
             .map_err(|e| e.to_string())?;
         if !password.is_empty() {
-            new_client
-                .register_user()
-                .await
-                .map_err(|e| e.to_string())?;
+            let response = new_client.register_user().await;
+            if let Err(e) = response {
+                match e {
+                    ClientError::UsernameAlreadyTaken => {}
+                    _ => return Err(e.to_string()),
+                }
+            }
         }
         *client = ProtocolClient::Wrac(new_client);
     } else {
