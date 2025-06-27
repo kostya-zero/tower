@@ -2698,7 +2698,8 @@ checksum = "69cdb34c158ceb288df11e18b4bd39de994f6657d83847bdffdbd7f346754b0f"
 [[package]]
 name = "rac_rs"
 version = "0.1.1"
-source = "git+https://github.com/kostya-zero/rac-rs#0f425577cbef5d4dc38a32ccc7722106fe6df530"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8bf504f3b3918cef32ae970d25af7215dcc850badcaa079cc52a67d8873b7926"
 dependencies = [
  "futures-util",
  "native-tls",
