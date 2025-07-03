@@ -30,6 +30,7 @@ lazy_static! {
     pub static ref ANSI_REGEX: Regex =
         Regex::new(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])").unwrap();
     pub static ref CONTROL_CHARS_REGEX: Regex = Regex::new(r"[\x00-\x1F\x7F]").unwrap();
+    pub static ref AR_MARK_REGEX: Regex = Regex::new(r"\x06!!AR!!<[^>]*>$").unwrap();
 }
 
 pub fn format_messages(messages: Vec<Cow<str>>) -> Vec<MessageResponse> {
@@ -48,6 +49,7 @@ pub fn format_messages(messages: Vec<Cow<str>>) -> Vec<MessageResponse> {
         };
         let cleaned = BRACES_REGEX.replace_all(message.trim(), "");
         let sanitized = sanitize(&cleaned);
+
 
         let date_regex = DATE_REGEX.captures(sanitized.as_str());
         if let Some(some_date) = date_regex {
@@ -78,7 +80,8 @@ pub fn format_messages(messages: Vec<Cow<str>>) -> Vec<MessageResponse> {
 }
 
 pub fn sanitize(text: &str) -> String {
-    CONTROL_CHARS_REGEX
-        .replace_all(&ANSI_REGEX.replace_all(text, ""), "")
-        .into_owned()
+    let removed_ansi = ANSI_REGEX.replace_all(text, "");
+    let removed_control = CONTROL_CHARS_REGEX.replace_all(&removed_ansi, "");
+    let removed_ar = AR_MARK_REGEX.replace(&removed_control, "");
+    removed_ar.into_owned()
 }

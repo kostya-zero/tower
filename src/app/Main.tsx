@@ -34,13 +34,7 @@ type Props = {
 
 export default function MainPage({ setAppState }: Props) {
   const [connecting, setConnecting] = useState(false);
-  const [useAuth, setUseAuth] = useState(false);
   const [useTls, setUseTls] = useState(false);
-
-  const handleAuthChange = (value: boolean) => {
-    setUseAuth(value);
-    console.log(value);
-  };
 
   const handleTlsChange = (value: boolean) => {
     setUseTls(value);
@@ -137,30 +131,16 @@ export default function MainPage({ setAppState }: Props) {
               <p className="text-xs text-red-500">{errors.username.message}</p>
             )}
           </div>
-          {useAuth && (
-            <div className="space-y-1">
-              <Input
-                disabled={connecting}
-                type={"password"}
-                placeholder="Password"
-                {...register("password")}
-              />
-              {errors.password && (
-                <p className="text-xs text-red-500">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-          )}
-          <div className={"flex items-center space-x-2"}>
-            <Switch
-              id={"authenticate"}
-              checked={useAuth}
-              onCheckedChange={handleAuthChange}
+          <div className="space-y-1">
+            <Input
+              disabled={connecting}
+              type={"password"}
+              placeholder="Password (optional)"
+              {...register("password")}
             />
-            <Label htmlFor={"authenticate"} className="text-sm">
-              Use authentication
-            </Label>
+            {errors.password && (
+              <p className="text-xs text-red-500">{errors.password.message}</p>
+            )}
           </div>
           <div className={"flex items-center space-x-2"}>
             <Switch
