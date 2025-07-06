@@ -3,6 +3,7 @@ use crate::message::MessageResponse;
 use rac::async_client::Client;
 use rac::async_wrac::WClient;
 use rac::shared::{ClientError, Credentials};
+use std::ops::Deref;
 use tauri::{Manager, State};
 use tokio::sync::Mutex;
 
@@ -12,21 +13,36 @@ mod message;
 
 #[derive(Default, Debug)]
 enum ProtocolClient {
-    Rac(Client),
-    Wrac(WClient),
+    Rac(Box<Client>),
+    Wrac(Box<WClient>),
     #[default]
     Nothing,
+}
+
+#[derive(Default, Debug)]
+enum Avatar {
+    Url(String),
+    #[default]
+    None,
 }
 
 #[tauri::command]
 async fn setup_connection(
     state: State<'_, Mutex<ProtocolClient>>,
+    state_avatar: State<'_, Mutex<Avatar>>,
     address: String,
     user_name: String,
     password: String,
     use_tls: bool,
+    avatar: String,
 ) -> Result<(), String> {
     let mut client = state.lock().await;
+    let mut avatar_state = state_avatar.lock().await;
+
+    if !avatar.is_empty() {
+        *avatar_state = Avatar::Url(avatar);
+        println!("{:?}", avatar_state);
+    }
 
     if address.starts_with("rac://") {
         let normal_addr = address.replace("rac://", "");
@@ -55,7 +71,7 @@ async fn setup_connection(
                 }
             }
         }
-        *client = ProtocolClient::Rac(rac_client);
+        *client = ProtocolClient::Rac(Box::new(rac_client));
     } else if address.starts_with("wrac://") {
         let normal_address = address.replace("wrac://", "");
         let mut new_client = WClient::new(
@@ -84,7 +100,7 @@ async fn setup_connection(
                 }
             }
         }
-        *client = ProtocolClient::Wrac(new_client);
+        *client = ProtocolClient::Wrac(Box::new(new_client));
     } else {
         return Err("Invalid connection string.".to_string());
     }
@@ -129,20 +145,57 @@ async fn fetch_messages(
 #[tauri::command]
 async fn send_message(
     state: State<'_, Mutex<ProtocolClient>>,
+    avatar_state: State<'_, Mutex<Avatar>>,
     message: String,
 ) -> Result<(), String> {
     let mut client = state.lock().await;
+    let avatar = avatar_state.lock().await;
+
     match &mut *client {
         ProtocolClient::Rac(rac) => {
-            rac.send_custom_message(format!("\u{25B2}<{}> {}", rac.username(), message).as_str())
-                .await
-                .map_err(|e| e.to_string())?;
+            println!("{:?}", format!(
+                "\u{25B2}<{}> {}{}",
+                rac.username(),
+                message,
+                if let Avatar::Url(url) = avatar.deref() {
+                    format!("\x06!!AR!!{url}")
+                } else {
+                    String::new()
+                }
+            ));
+            rac.send_custom_message(
+                format!(
+                    "\u{25B2}<{}> {}{}",
+                    rac.username(),
+                    message,
+                    if let Avatar::Url(url) = avatar.deref() {
+                        format!("\x06!!AR!!{url}")
+                    } else {
+                        String::new()
+                    }
+                )
+                .as_str(),
+            )
+            .await
+            .map_err(|e| e.to_string())?;
             Ok(())
         }
         ProtocolClient::Wrac(wrac) => {
-            wrac.send_custom_message(format!("\u{25B2}<{}> {}", wrac.username(), message).as_str())
-                .await
-                .map_err(|e| e.to_string())?;
+            wrac.send_custom_message(
+                format!(
+                    "\u{25B2}<{}> {}{}",
+                    wrac.username(),
+                    message,
+                    if let Avatar::Url(url) = avatar.deref() {
+                        format!("\x06!!AR!!{url}")
+                    } else {
+                        String::new()
+                    }
+                )
+                .as_str(),
+            )
+            .await
+            .map_err(|e| e.to_string())?;
             Ok(())
         }
         ProtocolClient::Nothing => Err("Client is not initialized".to_string()),
@@ -154,6 +207,7 @@ pub fn run() {
         .setup(|app| {
             // Initialize an AppState with no Client by default.
             app.manage(Mutex::new(ProtocolClient::Nothing));
+            app.manage(Mutex::new(Avatar::None));
 
             if cfg!(debug_assertions) {
                 app.handle().plugin(

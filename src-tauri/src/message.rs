@@ -12,4 +12,5 @@ pub struct Message {
     pub username: String,
     pub timestamp: Option<String>,
     pub client: String,
+    pub avatar_url: Option<String>,
 }

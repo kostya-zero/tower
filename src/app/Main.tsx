@@ -24,6 +24,7 @@ const connectSchema = z.object({
   serverAddress: z.string().nonempty("Server address is required"),
   username: z.string().nonempty("Username is required"),
   password: z.string().optional(),
+  avatar: z.string().optional(),
 });
 
 type ConnectFormValues = z.infer<typeof connectSchema>;
@@ -51,6 +52,7 @@ export default function MainPage({ setAppState }: Props) {
       serverAddress: "",
       username: "",
       password: "",
+      avatar: "",
     },
   });
 
@@ -75,6 +77,7 @@ export default function MainPage({ setAppState }: Props) {
       userName: values.username,
       password: values.password,
       useTls: useTls,
+      avatar: values.avatar,
     })
       .then(() => {
         setAppState(AppState.Chat);
@@ -129,6 +132,17 @@ export default function MainPage({ setAppState }: Props) {
             />
             {errors.username && (
               <p className="text-xs text-red-500">{errors.username.message}</p>
+            )}
+          </div>
+          <div className="space-y-1">
+            <Input
+              disabled={connecting}
+              type={"text"}
+              placeholder="Avatar URL (optional)"
+              {...register("avatar")}
+            />
+            {errors.avatar && (
+              <p className="text-xs text-red-500">{errors.avatar.message}</p>
             )}
           </div>
           <div className="space-y-1">

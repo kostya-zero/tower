@@ -179,7 +179,7 @@ export default function ChatPage({ setAppState }: Props) {
             message.message ? (
               <MessageSection message={message.message} key={index} />
             ) : (
-              <BadMessageSection rawString={message.raw_string} key={index} />
+              <BadMessageSection rawString={message.rawString} key={index} />
             ),
           )}
         </ScrollArea>

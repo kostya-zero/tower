@@ -18,7 +18,7 @@ impl Display for Clients {
             Clients::Mefedroniy => write!(f, "Mefedroniy"),
             Clients::CRAB => write!(f, "CRAB"),
             Clients::clRAC => write!(f, "clRAC"),
-            Clients::Snowdrop => write!(f, "Snowdrop")
+            Clients::Snowdrop => write!(f, "Snowdrop"),
         }
     }
 }

@@ -1,13 +1,14 @@
 type MessageResponse = {
   message: Message | null;
-  raw_string: string;
+  rawString: string;
 };
 
 type Message = {
   client: string;
   content: string;
   username: string;
-  timestamp: string;
+  timestamp?: string;
+  avatar_url?: string;
 };
 
 export type { MessageResponse, Message };
