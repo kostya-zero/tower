@@ -10,15 +10,6 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { MessageResponse } from "@/lib/types/message.types";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { AppState } from "@/lib/enums/appstate";
 import { toast } from "@/components/Toasts";
 import MessageList from "@/components/MessageList";
@@ -44,8 +35,6 @@ export default function ChatPage({ setAppState }: Props) {
   const [showDisconnectDialog, setShowDisconnectDialog] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const [isAtBottom, setIsAtBottom] = useState(true);
 
   const fetchMessages = () => {
     console.log("fetching messages");
@@ -76,11 +65,9 @@ export default function ChatPage({ setAppState }: Props) {
 
   useEffect(() => {
     if (isAtBottom) {
-      setTimeout(() => {
-        scrollToBottom();
-      }, 10);
+      setTimeout(scrollToBottom, 10);
     }
-  }, [messages, isAtBottom]);
+  }, [messages, isAtBottom, scrollToBottom]);
 
   async function stopFetching() {
     if (intervalRef.current) {
