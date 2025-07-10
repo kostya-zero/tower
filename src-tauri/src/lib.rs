@@ -4,6 +4,7 @@ use rac::async_client::Client;
 use rac::async_wrac::WClient;
 use rac::shared::{ClientError, Credentials};
 use std::ops::Deref;
+use std::sync::Arc;
 use tauri::{Manager, State};
 use tokio::sync::Mutex;
 
@@ -12,7 +13,7 @@ mod formatter;
 mod message;
 
 #[derive(Default, Debug)]
-enum ProtocolClient {
+pub enum ProtocolClient {
     Rac(Box<Client>),
     Wrac(Box<WClient>),
     #[default]
@@ -20,28 +21,25 @@ enum ProtocolClient {
 }
 
 #[derive(Default, Debug)]
-enum Avatar {
-    Url(String),
-    #[default]
-    None,
+pub struct AppState {
+    pub client: Arc<Mutex<ProtocolClient>>,
+    pub avatar: Arc<Mutex<Option<String>>>,
 }
 
 #[tauri::command]
 async fn setup_connection(
-    state: State<'_, Mutex<ProtocolClient>>,
-    state_avatar: State<'_, Mutex<Avatar>>,
+    app_state: State<'_, AppState>,
     address: String,
     user_name: String,
     password: String,
     use_tls: bool,
     avatar: String,
 ) -> Result<(), String> {
-    let mut client = state.lock().await;
-    let mut avatar_state = state_avatar.lock().await;
+    let mut client = app_state.client.lock().await;
+    let mut avatar_lock = app_state.avatar.lock().await;
 
     if !avatar.is_empty() {
-        *avatar_state = Avatar::Url(avatar);
-        println!("{:?}", avatar_state);
+        *avatar_lock = Some(avatar);
     }
 
     if address.starts_with("rac://") {
@@ -108,17 +106,15 @@ async fn setup_connection(
 }
 
 #[tauri::command]
-async fn disconnect(state: State<'_, Mutex<ProtocolClient>>) -> Result<(), String> {
-    let mut client = state.lock().await;
+async fn disconnect(app_state: State<'_, AppState>) -> Result<(), String> {
+    let mut client = app_state.client.lock().await;
     *client = ProtocolClient::Nothing;
     Ok(())
 }
 
 #[tauri::command]
-async fn fetch_messages(
-    state: State<'_, Mutex<ProtocolClient>>,
-) -> Result<Vec<MessageResponse>, String> {
-    let mut client = state.lock().await;
+async fn fetch_messages(app_state: State<'_, AppState>) -> Result<Vec<MessageResponse>, String> {
+    let mut client = app_state.client.lock().await;
     match &mut *client {
         ProtocolClient::Rac(rac) => {
             let messages = rac
@@ -143,32 +139,31 @@ async fn fetch_messages(
 }
 
 #[tauri::command]
-async fn send_message(
-    state: State<'_, Mutex<ProtocolClient>>,
-    avatar_state: State<'_, Mutex<Avatar>>,
-    message: String,
-) -> Result<(), String> {
-    let mut client = state.lock().await;
-    let avatar = avatar_state.lock().await;
+async fn send_message(app_state: State<'_, AppState>, message: String) -> Result<(), String> {
+    let mut client = app_state.client.lock().await;
+    let avatar = app_state.avatar.lock().await;
 
     match &mut *client {
         ProtocolClient::Rac(rac) => {
-            println!("{:?}", format!(
-                "\u{25B2}<{}> {}{}",
-                rac.username(),
-                message,
-                if let Avatar::Url(url) = avatar.deref() {
-                    format!("\x06!!AR!!{url}")
-                } else {
-                    String::new()
-                }
-            ));
+            println!(
+                "{:?}",
+                format!(
+                    "\u{25B2}<{}> {}{}",
+                    rac.username(),
+                    message,
+                    if let Some(url) = avatar.deref() {
+                        format!("\x06!!AR!!{url}")
+                    } else {
+                        String::new()
+                    }
+                )
+            );
             rac.send_custom_message(
                 format!(
                     "\u{25B2}<{}> {}{}",
                     rac.username(),
                     message,
-                    if let Avatar::Url(url) = avatar.deref() {
+                    if let Some(url) = avatar.deref() {
                         format!("\x06!!AR!!{url}")
                     } else {
                         String::new()
@@ -186,7 +181,7 @@ async fn send_message(
                     "\u{25B2}<{}> {}{}",
                     wrac.username(),
                     message,
-                    if let Avatar::Url(url) = avatar.deref() {
+                    if let Some(url) = avatar.deref() {
                         format!("\x06!!AR!!{url}")
                     } else {
                         String::new()
@@ -205,9 +200,7 @@ async fn send_message(
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
-            // Initialize an AppState with no Client by default.
-            app.manage(Mutex::new(ProtocolClient::Nothing));
-            app.manage(Mutex::new(Avatar::None));
+            app.manage(AppState::default());
 
             if cfg!(debug_assertions) {
                 app.handle().plugin(
