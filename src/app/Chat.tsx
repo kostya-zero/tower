@@ -1,7 +1,5 @@
 "use client";
 
-import BadMessageSection from "@/components/BadMessageSection";
-import MessageSection from "@/components/MessageSection";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,7 +8,6 @@ import {
   SendHorizonalIcon,
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { invoke } from "@tauri-apps/api/core";
 import { MessageResponse } from "@/lib/types/message.types";
 import {
@@ -24,6 +21,10 @@ import {
 } from "@/components/ui/dialog";
 import { AppState } from "@/lib/enums/appstate";
 import { toast } from "@/components/Toasts";
+import MessageList from "@/components/MessageList";
+import DisconnectDialog from "@/components/DisconnectDialog";
+
+const FETCH_DELAY = 2000;
 
 type Props = {
   setAppState: React.Dispatch<React.SetStateAction<AppState>>;
@@ -33,33 +34,18 @@ export default function ChatPage({ setAppState }: Props) {
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<MessageResponse[]>([]);
+  const {
+    scrollAreaRef,
+    isAtBottom,
+    setIsAtBottom,
+    checkIfAtBottom,
+    scrollToBottom,
+  } = useScrollToBottom();
   const [showDisconnectDialog, setShowDisconnectDialog] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
-  const delay = 2500;
-
-  const checkIfAtBottom = () => {
-    const scrollContainer = scrollAreaRef.current?.querySelector(
-      "[data-radix-scroll-area-viewport]",
-    );
-    if (scrollContainer) {
-      const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
-      const threshold = 10; // Small threshold to account for floating point precision
-      const atBottom = scrollTop + clientHeight >= scrollHeight - threshold;
-      setIsAtBottom(atBottom);
-    }
-  };
-
-  const scrollToBottom = () => {
-    const scrollContainer = scrollAreaRef.current?.querySelector(
-      "[data-radix-scroll-area-viewport]",
-    );
-    if (scrollContainer) {
-      scrollContainer.scrollTop = scrollContainer.scrollHeight;
-    }
-  };
 
   const fetchMessages = () => {
     console.log("fetching messages");
@@ -77,7 +63,7 @@ export default function ChatPage({ setAppState }: Props) {
   };
 
   useEffect(() => {
-    intervalRef.current = setInterval(fetchMessages, delay);
+    intervalRef.current = setInterval(fetchMessages, FETCH_DELAY);
 
     inputRef.current!.focus();
 
@@ -96,18 +82,18 @@ export default function ChatPage({ setAppState }: Props) {
     }
   }, [messages, isAtBottom]);
 
-  async function stopFetchingMessages() {
+  async function stopFetching() {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
   }
 
-  async function startFetchingMessages() {
+  async function startFetching() {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
-    intervalRef.current = setInterval(fetchMessages, delay);
+    intervalRef.current = setInterval(fetchMessages, FETCH_DELAY);
   }
 
   const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,7 +110,7 @@ export default function ChatPage({ setAppState }: Props) {
 
     setIsAtBottom(true);
 
-    await stopFetchingMessages();
+    await stopFetching();
     await invoke("send_message", { message: send_message })
       .then(() => {
         setMessage("");
@@ -143,7 +129,7 @@ export default function ChatPage({ setAppState }: Props) {
       })
       .finally(() => {
         setSending(false);
-        startFetchingMessages();
+        startFetching();
       });
   }
 
@@ -155,7 +141,7 @@ export default function ChatPage({ setAppState }: Props) {
   }
 
   async function performDisconnect() {
-    await stopFetchingMessages();
+    await stopFetching();
     await invoke("disconnect");
     setAppState(AppState.Main);
   }
@@ -169,20 +155,11 @@ export default function ChatPage({ setAppState }: Props) {
   return (
     <>
       <main className="flex h-screen shrink-0 grow-0 flex-col justify-between">
-        <ScrollArea
+        <MessageList
           ref={scrollAreaRef}
-          className="w-full flex-grow overflow-y-auto"
-          scrollHideDelay={400}
-          onScrollCapture={checkIfAtBottom}
-        >
-          {messages.map((message, index) =>
-            message.message ? (
-              <MessageSection message={message.message} key={index} />
-            ) : (
-              <BadMessageSection rawString={message.rawString} key={index} />
-            ),
-          )}
-        </ScrollArea>
+          messages={messages}
+          onScroll={checkIfAtBottom}
+        />
         <div className="flex flex-row gap-2 border-t border-neutral-800 p-2">
           <Button
             size="icon"
@@ -214,32 +191,11 @@ export default function ChatPage({ setAppState }: Props) {
           </Button>
         </div>
       </main>
-      <Dialog
+      <DisconnectDialog
         open={showDisconnectDialog}
         onOpenChange={setShowDisconnectDialog}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Disconnect from server</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to disconnect from the server?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant={"outline"}>Cancel</Button>
-            </DialogClose>
-            <Button
-              onClick={() => {
-                setShowDisconnectDialog(false);
-                performDisconnect();
-              }}
-            >
-              Disconnect
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onConfirm={performDisconnect}
+      />
     </>
   );
 }
