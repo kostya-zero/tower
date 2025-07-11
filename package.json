@@ -1,7 +1,7 @@
 {
   "name": "tower",
   "description": "A modern desktop client for RAC v2 built with Tauri.",
-  "version": "1.0.0-rc1",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",

@@ -1,6 +1,6 @@
 [package]
 name = "tower"
-version = "1.0.0-rc1"
+version = "1.0.0"
 description = "A modern desktop client for RAC v2 built with Tauri."
 authors = ["Konstantin Zhigaylo <zero@kostyazero.com>"]
 license = "MIT"

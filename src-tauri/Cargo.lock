@@ -4121,7 +4121,7 @@ dependencies = [
 
 [[package]]
 name = "tower"
-version = "1.0.0-rc1"
+version = "1.0.0"
 dependencies = [
  "lazy_static",
  "log",

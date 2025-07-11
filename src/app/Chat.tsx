@@ -14,6 +14,7 @@ import { AppState } from "@/lib/enums/appstate";
 import { toast } from "@/components/Toasts";
 import MessageList from "@/components/MessageList";
 import DisconnectDialog from "@/components/DisconnectDialog";
+import { useScrollToBottom } from "@/hooks/useScrollToBottom";
 
 const FETCH_DELAY = 2000;
 
@@ -53,9 +54,7 @@ export default function ChatPage({ setAppState }: Props) {
 
   useEffect(() => {
     intervalRef.current = setInterval(fetchMessages, FETCH_DELAY);
-
     inputRef.current!.focus();
-
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
