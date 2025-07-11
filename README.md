@@ -5,13 +5,16 @@
 <h1 align="center">Tower </h1>
 <p align="center">A modern desktop client for RAC v2 built with Tauri.</p>
 
-| Login Page | Chat Page                                                                 |
-| ---------- |---------------------------------------------------------------------------|
+| Login Page                                                                | Chat Page                                                                 |
+|---------------------------------------------------------------------------|---------------------------------------------------------------------------|
 | ![Screenshot of the login page in Tower](/.github/assets/screenshot1.png) | ![Screenshot of the login page in Tower](/.github/assets/screenshot2.png) |
 
 Welcome to repository of Tower, a modern desktop client for the RAC v2 protocol built with Tauri.
 Tower is designed to provide a seamless and user-friendly experience for interacting with RAC servers.
 
+## Installation
+
+Download a binary from [GitHub Releases](https://github.com/kostya-zero/tower/releases) that matches your platform.
 
 ## License
 
